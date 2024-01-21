@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: meta_header('対象設定',~{::link},~{::script})}">
+	<script src="/script/script.js"></script>
+</head>
+
+<body>
+	<div th:replace="~{common :: header}"></div>
+	<div class="form" id="registForm">
+		<div class ="close-button" onclick="closeRegistForm()">閉じる</div>
+		<h2 class="keeper">棋譜取得対象追加</h2>
+		<form method="post" th:action="@{/setting}" th:object="${settingAddData}">
+			<table>
+				<tr>
+					<th class="required"><label>アプリ種別</label></th>
+					<td><div class="cp_iptxt"><select name="appType">
+						<option value=""></option>
+						<option th:each="appType : ${T(jp.co.kifkeeper.code.AppType).values()}" th:value="${appType.code}" 
+						th:text="${appType.name}" th:selected="${settingAddData.appType == appType.code}" />
+					</select></div></td>
+				</tr>
+				<tr>
+					<th class="required"><label>ユーザID</label></th>
+					<td><div class="cp_iptxt"><input type="text" th:field="*{appId}"/></div></td>
+				</tr>
+			</table>
+			<p th:if="${#fields.hasErrors('appType')}" th:errors="*{appType}" class="error_text"></p>
+			<p th:if="${#fields.hasErrors('appId')}" th:errors="*{appId}" class="error_text"></p>
+			<button type="submit" class="form_button">取得対象追加</button>
+			<!--
+			<p>※収集対象のIDが間違っていないことをご確認ください。</p>
+			<a href="https://shogiwars.heroz.jp/web_app/standard/" target="_blank">将棋ウォーズ公式</a><br>
+			<a href="https://web.shogidojo.net/24member/meibo/" target="_blank">将棋倶楽部24 名簿</a><br>
+			<a href="http://wars.fm/shogi?lang=ja#users/0" target="_blank">将棋クエスト ユーザ一覧</a><br>
+			-->
+		</form>
+	</div>
+	<div id="settingMenu" class="formMenu" style="display:none;">
+		<button onclick="openRegistForm()" class="form_button">棋譜取得対象追加</button>
+	</div>
+
+	<div id="wars_setting_form" class="form">
+		<div class ="close-button" onclick="dispChangeSettingForm('wars','form')">閉じる</div>
+		<h2 class = "wars">将棋ウォーズ 棋譜取得対象</h2>
+		<form>
+		<table>
+			<tr th:each="warsId: ${settingData.warsIds}" th:attr="id=${'1-' + warsId}">
+				<th><label th:text="${warsId}"></label></th>
+				<td>
+					<button th:id="'target_' + *{warsId} + '_1'" onclick="targetDeleteHandler(event)" class="table_button">削除</button>
+				</td>
+			</tr>
+		</table>
+		</form>
+        <div class="center">
+			<p th:if="${#lists.isEmpty(settingData.warsIds)}">将棋ウォーズの収集対象は、現在未設定です。</p>
+        </div>
+	</div>
+	<div id="wars_setting_menu" class="formMenu" style="display:none;">
+		<button onclick="dispChangeSettingForm('wars','menu')" class="form_button">将棋ウォーズ 棋譜取得対象</button>
+	</div>
+	
+	<div id="club24_setting_form" class="form">
+		<div class ="close-button" onclick="dispChangeSettingForm('club24','form')">閉じる</div>
+		<h2 class = "club24">将棋倶楽部24 棋譜取得対象</h2>
+		<form>
+		<table>
+			<tr th:each="club24Id: ${settingData.club24Ids}" th:attr="id=${'2-' + club24Id}">
+				<th><label th:text="${club24Id}"></label></th>
+				<td><button th:id="'target_' + *{club24Id} + '_2'" onclick="targetDeleteHandler(event)" class="table_button">削除</button></td>
+			</tr>
+		</table>
+		</form>
+        <div class="center">
+			<p th:if="${#lists.isEmpty(settingData.club24Ids)}">将棋倶楽部24の収集対象は、現在未設定です。</p>
+			<p th:if="${userSettingData.club24Id == null}">将棋倶楽部24の棋譜収集には、ユーザ設定が必要です。</p>
+			<a th:if="${userSettingData.club24Id == null}" th:href="@{/user-setting}">将棋倶楽部24 ユーザ設定</a>
+        </div>
+	</div>
+	<div id="club24_setting_menu" class="formMenu" style="display:none;">
+		<button onclick="dispChangeSettingForm('club24','menu')" class="form_button">将棋倶楽部24 棋譜取得対象</button>
+	</div>
+<!--
+	<div id="quest_setting_form" class="form">
+		<div class ="close-button" onclick="dispChangeSettingForm('quest','form')">閉じる</div>
+		<h2 class = "quest">将棋クエスト 棋譜取得対象</h2>
+		<form>
+		<table>
+			<tr th:each="questId: ${settingData.questIds}" th:attr="id=${'3-' + questId}">
+				<th><label th:text="${questId}"></label></th>
+				<td><button th:id="'target_' + *{questId} + '_3'" onclick="targetDeleteHandler(event)" class="table_button">削除</button></td>
+			</tr>
+		</table>
+        <div class="center">
+			<p th:if="${#lists.isEmpty(settingData.questIds)}">将棋クエストの収集対象は、現在未設定です。</p>
+        </div>
+        </form>
+	</div>
+	<div id="quest_setting_menu" class="formMenu" style="display:none;">
+		<button onclick="dispChangeSettingForm('quest','menu')" class="form_button">将棋クエスト 棋譜取得対象</button>
+	</div>
+-->
+    <div class="dialog" id="com-dialog" style="display:none;">
+		<span id="dialog-message"></span>
+	</div>
+	<div id="dialogEvent" th:attr="dialogText=${dialogText}" />
+</body>
+</html>

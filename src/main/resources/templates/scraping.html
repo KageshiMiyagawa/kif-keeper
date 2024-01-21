@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{common :: meta_header('棋譜収集',~{::link},~{::script})}">
+	  <script src="/script/script.js"></script>
+  </head>
+  <body>
+	<div th:replace="~{common :: header}"></div>
+	<div class="form">
+		<h2 class="keeper">棋譜収集条件</h2>
+		<form method="post" th:action="@{/scraping}">
+			<table>
+				<tr>
+					<th><label>アプリ種別</label></th>
+					<td><div class="cp_iptxt"><select name="appType" th:value="${appType}" id="appTypeSelect" onchange="appTypeChangeHandler()">
+						<option value=""></option>
+						<option th:each="appType : ${T(jp.co.kifkeeper.code.AppType).values()}" th:value="${appType.code}"th:text="${appType.name}"
+						th:selected="${scrapingCond.appType == appType.code}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>ユーザID</label></th>
+					<td><div class="cp_iptxt"><select name="appId" th:value="${appId}" id="appIdSelect">
+						<option value=""></option>
+						<option th:each="appTargetData : ${appTargetList}" th:value="${appTargetData.appId}" th:text="${appTargetData.dispAppId}"
+						th:selected="${scrapingCond.appId == appTargetData.appId}"/>
+					</select></div></td>
+				</tr>
+			</table>
+			<p th:if="${noAppTarget}" class="error_text" >収集対象が未設定です。<a th:href="@{/setting}">棋譜取得対象設定</a>で収集対象を設定してください。</p>
+			<button type="submit" class="form_button">棋譜収集</button>
+		</form>
+	</div>
+	<br>
+	<table class="base_table" th:if="${not #lists.isEmpty(scrapingResultList)}">
+		<caption>【棋譜収集結果】</caption>
+		<thead>
+			<th>アプリ種別</th>
+			<th>ユーザID</th>
+			<th>収集結果</th>
+			<th>収集件数</th>
+		</thead>
+		<tr th:each="scrapingResult : ${scrapingResultList}" th:object="${scrapingResult}">
+			<td th:text="*{appType}"/>
+			<td th:text="*{appId}"/>
+			<td th:text="*{result}"/>
+			<td th:text="*{count}"/>
+		</tr>
+	</table>
+	<div id="dialogEvent" th:attr="dialogText=${dialogText}" />
+  </body>
+</html>

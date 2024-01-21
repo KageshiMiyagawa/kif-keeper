@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: meta_header('ユーザ設定',~{::link},~{::script})}">
+	<script src="/script/script.js"></script>
+</head>
+
+<body>
+	<div th:replace="~{common :: header}"></div>
+	<div class="form" id="registForm">
+		<div class ="close-button" onclick="closeRegistForm()">閉じる</div>
+		<h2 class="club24">将棋倶楽部24 ユーザー設定</h2>
+		<form method="post" th:action="@{/user-setting}" th:object="${userSettingData}">
+			<table>
+				<tr>
+					<th class="required"><label>ユーザID</label></th>
+					<td><div class="cp_iptxt"><input type="text" th:field="*{club24Id}"/></div></td>
+				</tr>
+				<tr>
+					<th class="required"><label>パスワード</label></th>
+					<td><div class="cp_iptxt"><input type="password" th:field="*{club24Pw}"/></div></td>
+				</tr>
+			</table>
+			<p th:if="${#fields.hasErrors('club24Id')}" th:errors="*{club24Id}" class="error_text"></p>
+			<p th:if="${#fields.hasErrors('club24Pw')}" th:errors="*{club24Pw}" class="error_text"></p>
+			<button type="submit" class="form_button">将棋倶楽部24 ユーザ設定</button>
+		</form>
+	</div>
+	<div id="settingMenu" class="formMenu" style="display:none;">
+		<button onclick="openRegistForm()" class="form_button">将棋倶楽部24 ユーザー設定</button>
+	</div>
+    <div class="dialog" id="com-dialog" style="display:none;">
+		<span id="dialog-message"></span>
+	</div>
+	<div id="dialogEvent" th:attr="dialogText=${dialogText}" />
+</body>
+</html>

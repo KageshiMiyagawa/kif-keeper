@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{common :: meta_header('棋譜検索',~{::link},~{::script})}">
+	  <script src="/script/script.js"></script>
+  </head>
+  <body>
+	<div th:replace="~{common :: header}"></div>
+	<div class="form" id="searchForm" style="display:none;">
+		<div class ="close-button" onclick="closeSearchForm()">閉じる</div>
+		<h2 class="keeper">棋譜検索条件</h2>
+		<form method="get" th:action="@{/kifuList}" id="kifuSearchForm" >
+			<table>
+				<tr>
+					<th><label>アプリ種別</label></th>
+					<td><div class="cp_iptxt"><select name="appType" id="appTypeSelect" onchange="appTypeChangeHandler()">
+						<option value=""></option>
+						<option th:each="appType : ${T(jp.co.kifkeeper.code.AppType).values()}" th:value="${appType.code}" th:text="${appType.name}" 
+						th:selected="${kifuFetchCond.appType == appType.code}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>ユーザID</label></th>
+					<td><div class="cp_iptxt"><select name="appId" id="appIdSelect" th:value="${appId}" >
+						<option value=""></option>
+						<option th:each="appTargetData : ${appTargetList}" th:value="${appTargetData.appId}" th:text="${appTargetData.dispAppId}"
+						th:selected="${kifuFetchCond.appId == appTargetData.appId}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>勝敗結果</label></th>
+					<td><div class="cp_iptxt"><select name="gameResult" th:value="${gameResult}" >
+						<option value=""></option>
+						<option th:each="gameResult : ${T(jp.co.kifkeeper.code.GameResult).values()}" th:value="${gameResult.code}" th:text="${gameResult.name}"
+						th:selected="${kifuFetchCond.gameResult == gameResult.code}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>相手段位（X段以上）</label></th>
+					<td><div class="cp_iptxt"><select name="startGrade" th:value="${startGrade}" >
+						<option value=""></option>
+						<option th:each="grade : ${T(jp.co.kifkeeper.code.Grade).values()}" th:value="${grade.code}" th:text="${grade.name}"
+						th:selected="${kifuFetchCond.startGrade == grade.code}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>相手段位（X段以下）</label></th>
+					<td><div class="cp_iptxt"><select name="endGrade" th:value="${endGrade}" >
+						<option value=""></option>
+						<option th:each="grade : ${T(jp.co.kifkeeper.code.Grade).values()}" th:value="${grade.code}" th:text="${grade.name}" 
+						th:selected="${kifuFetchCond.endGrade == grade.code}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>対局日時（開始）</label></th>
+					<td><div class="cp_iptxt"><input type="text" name="startDt" th:value="${kifuFetchCond.startDt}"
+						onfocus="this.type='datetime-local' " onfocusout="this.type='text'" /></div></td>
+				</tr>
+				<tr>
+					<th><label>対局日時（終了）</label></th>
+					<td><div class="cp_iptxt"><input type="text" name="endDt" th:value="${kifuFetchCond.endDt}"
+						onfocus="this.type='datetime-local' " onfocusout="this.type='text'" /></div></td>
+				</tr>
+				<tr>
+					<th><label>勝者指定</label></th>
+					<td><div class="cp_iptxt"><select name="winnerId" th:value="${winnerId}" >
+						<option value=""></option>
+						<option th:each="appTargetData : ${appTargetList}" th:value="${appTargetData.appId}" th:text="${appTargetData.dispAppId}"
+						th:selected="${kifuFetchCond.winnerId == appTargetData.appId}"/>
+					</select></div></td>
+				</tr>
+				<tr>
+					<th><label>敗者指定</label></th>
+					<td><div class="cp_iptxt"><select name="loserId" th:value="${loserId}" >
+						<option value=""></option>
+						<option th:each="appTargetData : ${appTargetList}" th:value="${appTargetData.appId}" th:text="${appTargetData.dispAppId}"
+						th:selected="${kifuFetchCond.loserId == appTargetData.appId}"/>
+					</select></div></td>
+				</tr>
+			</table>
+			<button type="submit" class="form_button">棋譜検索</button>
+			<button type="button" onclick="clearSearchCondition()" id="clearSearchConditionButton" class="form_button">クリア</button>
+		</form>
+	</div>
+	<div id="kifuListMenu">
+		<button onclick="openSearchForm()" id="openSearchButton" class="form_button">棋譜検索</button>
+	</div>
+	<br>
+	<div class="center">
+		[[${totalCount}]]件の棋譜がHITしました。（[[${startCount}]]〜[[${endCount}]]件を表示）
+	</div>
+	<div style="display: flex; justify-content: center">
+		<form th:action="@{/downloadAll}" method="post" th:if="${not #lists.isEmpty(kifuDataList)}">
+        	<button type="submit" class="form_button">一括ダウンロード</button>
+    	</form>
+		<form th:action="@{/downloadCsv}" method="get" th:if="${not #lists.isEmpty(kifuDataList)}">
+        	<button type="submit" class="form_button">CSVダウンロード</button>
+    	</form>
+	</div>
+	<div class="table-wrapper">
+	<table class="base_table" id="kifuTable" th:if="${not #lists.isEmpty(kifuDataList)}">
+		<thead>
+			<th>アプリ</th>
+			<th>時間</th>
+			<th>先手</th>
+			<th>段位</th>
+			<th>後手</th>
+			<th>段位</th>
+			<th>手数</th>
+			<th>結果</th>
+			<th>対局日</th>
+			<th colspan="3">棋譜操作</th>
+		</thead>
+		<tr th:each="kifu : ${kifuDataList}" th:object="${kifu}">
+			<td th:text="*{appType}"/>
+			<td th:text="*{timeRule}"/>
+			<td th:text="*{senteId}"/>
+			<td th:text="*{senteGrade}"/>
+			<td th:text="*{goteId}"/>
+			<td th:text="*{goteGrade}"/>
+			<td th:text="*{handCount}"/>
+			<td th:text="*{gameResult}"/>
+			<td th:text="*{gameDate}"/>
+			<td><a th:href="*{showLink}" target="_blank" class="table_button"/>閲覧</td>
+			<td><button th:id="'kifuCopy_' + *{kifuId}" onclick="kifuCopyHandler(event)" class="table_button">コピー</button></td>
+			<td>
+				<form th:action="@{/download/{kifuId}(kifuId=*{kifuId})}" method="get">
+	        		<button type="submit" class="table_button">取得</button>
+	    		</form>
+    		</td>
+		</tr>
+	</table>
+	</div>
+	<div th:if="${not #lists.isEmpty(kifuDataList)}">
+	  <ul>
+	    <li style="display:inline;">
+	      <span th:if="${page.first}">&lt;&lt;前</span>
+	      <a
+	        th:if="${!page.first}"
+	        th:href="'/kifuList?page='+ ${page.number - 1} + '&' + ${fetchQuery}"
+	      >
+	        &lt;&lt;前
+	      </a>
+	    </li>
+	    <li
+	      th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+	      style="display:inline; margin-left:10px;"
+	    >
+	      <span th:if="${i} == ${page.number}" th:text="${i + 1}">1</span>
+	      <a
+	        th:if="${i} != ${page.number}"
+	        th:href="'/kifuList?page='+ ${i} + '&' + ${fetchQuery}"
+	      >
+	        <span th:text="${i+1}">1</span>
+	      </a>
+	    </li>
+	    <li style="display:inline; margin-left:10px;">
+	      <span th:if="${page.last}">次&gt;&gt;</span>
+	      <a
+	        th:if="${!page.last}"
+	        th:href="'/kifuList?page='+ ${page.number + 1} + '&' + ${fetchQuery}"
+	      >
+	        次&gt;&gt;
+	      </a>
+	    </li>
+	  </ul>
+	</div>
+    <div class="dialog" id="com-dialog" style="display:none;">
+		<span id="dialog-message"></span>
+	</div>
+	<div id="dialogEvent" th:attr="dialogText=${dialogText}" />
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common :: meta_header('トップ',~{::link},~{::script})}">
+</head>
+
+<body>
+	<div th:replace="~{common :: header}"></div>
+	<div id="register_form" class="form">
+		<h2 class="keeper">メインメニュー</h2>
+		<form method="get" th:action="@{/kifuList}">
+			<button type="submit" class="menu_button">棋譜一覧</button>	
+		</form>
+		<form method="get" th:action="@{/scraping}">
+			<button type="submit" class="menu_button">棋譜収集</button>	
+		</form>
+	</div>
+	<div id="register_form" class="form">
+		<h2 class="keeper2">各種設定</h2>
+		<form method="get" th:action="@{/setting}">
+			<button type="submit" class="menu_button">棋譜取得対象設定</button>	
+		</form>
+		<form method="get" th:action="@{/user-setting}">
+			<button type="submit" class="menu_button">将棋倶楽部24 ユーザID設定</button>	
+		</form>
+	</div>
+</body>
+</html>
